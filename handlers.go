@@ -21,13 +21,21 @@
 package main
 
 import (
+	"fmt"
+	"html/template"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
 func collectRoutes(router *mux.Router) {
-	router.HandleFunc("/", indexHandler).Methods("GET").Name("index")
+	router.HandleFunc("/", indexHandler).Name("index")
+	router.HandleFunc("/toggle/{milestone:[0-9]+}/{task:[0-9]+}", toggleHandler).Name("toggle")
+	router.HandleFunc("/edit", editHandler).Methods("GET").Name("edit")
+	router.HandleFunc("/edit", saveHandler).Methods("POST").Name("save")
+	router.HandleFunc("/prune", pruneHandler).Name("prune")
+	router.HandleFunc("/backup", pruneHandler).Name("backup")
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,24 +45,60 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		serveError(w, "Cannot read data. Check the server log for details.")
 	}
 
-	var html string
-	if len(data.Milestones) == 0 {
-		html = "<p>No tasks defined yet.</p>"
-	}
+	html := `<section>`
+	hasDone := false
 
-	for _, milestone := range data.Milestones {
-		html += "<h2>" + milestone.Name + "</h2>"
+	for mIdx, milestone := range data.Milestones {
+		html += `<h2>` + milestone.Name + `</h2>`
 		if len(milestone.Tasks) == 0 {
-			html += "<p>No tasks in this group.</p>"
+			html += `<p>No tasks in this group.</p>`
 		} else {
-			html += "<ul>"
+			html += `<div class="group">`
 
-			for _, task := range milestone.Tasks {
-				html += "<li>" + task.Text + "</li>"
+			for tIdx, task := range milestone.Tasks {
+				class := "open"
+				if task.Done {
+					class = "done"
+					hasDone = true
+				}
+				path, _ := Router.Get("toggle").URLPath(
+					"milestone", strconv.Itoa(mIdx),
+					"task", strconv.Itoa(tIdx),
+				)
+				html += fmt.Sprintf(`<a href="%s" class="%s">%s</a>`,
+					path, class,
+					template.HTMLEscapeString(task.Text),
+				)
 			}
-			html += "</ul>"
+			html += `</div>`
 		}
-
 	}
+
+	html += `<div class="table"><div class="row"><a href="/edit" class="action">Edit</a>`
+	if hasDone {
+		html += `<a href="/prune" class="action">Prune</a>`
+	}
+	html += `<a href="/backup" class="action">Backup</a></div></div></section>`
+
 	serveHTML(w, "Tasks", html)
+}
+
+func toggleHandler(w http.ResponseWriter, r *http.Request) {
+	serveError(w, "Not implemented")
+}
+
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	serveError(w, "Not implemented")
+}
+
+func saveHandler(w http.ResponseWriter, r *http.Request) {
+	serveError(w, "Not implemented")
+}
+
+func pruneHandler(w http.ResponseWriter, r *http.Request) {
+	serveError(w, "Not implemented")
+}
+
+func backupHandler(w http.ResponseWriter, r *http.Request) {
+	serveError(w, "Not implemented")
 }

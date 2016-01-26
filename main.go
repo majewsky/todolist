@@ -29,7 +29,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var router = mux.NewRouter()
+var Router = mux.NewRouter()
 
 func main() {
 	//parse flags
@@ -44,8 +44,8 @@ func main() {
 	})
 
 	//setup the remaining routes with gorilla/mux
-	collectRoutes(router)
-	http.Handle("/", router)
+	collectRoutes(Router)
+	http.Handle("/", Router)
 
 	//run server
 	fmt.Printf("starting local HTTP server on port %d\n", *port)

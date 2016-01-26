@@ -1,3 +1,81 @@
 html {
-    font-family: sans-serif;
+	font-family: sans-serif;
+}
+
+html, body {
+	margin: 0;
+	padding: 0;
+}
+
+header {
+	background: #CCC;
+	border-bottom: 1px solid black;
+	padding: 1rem;
+}
+
+header > h1 {
+	margin: 0;
+	font-size: 2rem;
+	text-align: center;
+}
+
+section {
+	max-width: 30rem;
+	margin: 1rem auto;
+	padding: 0 1rem;
+}
+
+.group {
+	border: 1px solid black;
+	border-radius: 5px;
+}
+
+.group > a {
+	display: block;
+}
+
+a {
+	height: 2rem;
+	line-height: 2rem;
+	text-align: center;
+	text-decoration: none !important;
+	color: black !important;
+	font-weight: bold;
+}
+
+.group > a + a {
+	border-top: 1px solid black;
+}
+
+.done {
+	background: #CFC;
+}
+
+.done:active, .done:focus, .done:hover, .open:active, .open:focus, .open:hover {
+	background: #FFC;
+}
+
+.action:active, .action:focus, .action:hover {
+	background: #CCC;
+}
+
+.table {
+	display: table;
+	width: 100%;
+	border: 1px solid black;
+	border-radius: 5px;
+	margin-top: 1rem;
+}
+
+.table > .row {
+	display: table-row;
+}
+
+.table > .row > a {
+	display: table-cell;
+	width: 25%;
+}
+
+.table > .row > a + a {
+	border-left: 1px solid black;
 }
