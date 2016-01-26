@@ -41,7 +41,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	//TODO: login
 	data := ReadData()
 	if data == nil {
-		serveError(w, "Cannot read data. Check the server log for details.")
+		serveError(w, 500, "Cannot read data. Check the server log for details.")
 	}
 
 	html := `<section>`
@@ -83,21 +83,45 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func toggleHandler(w http.ResponseWriter, r *http.Request) {
-	serveError(w, "Not implemented")
+	data := ReadData()
+	if data == nil {
+		serveError(w, 500, "Cannot read data. Check the server log for details.")
+	}
+
+	//retrieve parameters
+	vars := mux.Vars(r)
+	mIdx, _ := strconv.Atoi(vars["milestone"])
+	tIdx, _ := strconv.Atoi(vars["task"])
+
+	if mIdx < 0 || mIdx >= len(data.Milestones) {
+		serveError(w, 400, "Milestone index out of range.")
+	}
+	milestone := data.Milestones[mIdx]
+	if tIdx < 0 || tIdx >= len(milestone.Tasks) {
+		serveError(w, 400, "Task index out of range.")
+	}
+	task := milestone.Tasks[tIdx]
+	task.Done = !task.Done
+	if !data.WriteData() {
+		serveError(w, 500, "Cannot write data. Check the server log for details.")
+	}
+
+	w.Header().Add("Location", "/")
+	w.WriteHeader(302)
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
-	serveError(w, "Not implemented")
+	serveError(w, 500, "Not implemented")
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request) {
-	serveError(w, "Not implemented")
+	serveError(w, 500, "Not implemented")
 }
 
 func pruneHandler(w http.ResponseWriter, r *http.Request) {
-	serveError(w, "Not implemented")
+	serveError(w, 500, "Not implemented")
 }
 
 func backupHandler(w http.ResponseWriter, r *http.Request) {
-	serveError(w, "Not implemented")
+	serveError(w, 500, "Not implemented")
 }

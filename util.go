@@ -47,8 +47,8 @@ func serveHTML(w http.ResponseWriter, title, content string) {
 	serveCommon(w, title, content, http.StatusOK)
 }
 
-func serveError(w http.ResponseWriter, errorMsg string) {
-	serveCommon(w, "Error", errorMsg, http.StatusInternalServerError)
+func serveError(w http.ResponseWriter, status int, errorMsg string) {
+	serveCommon(w, "Error", errorMsg, status)
 }
 
 func serveCommon(w http.ResponseWriter, title, content string, status int) {

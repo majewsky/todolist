@@ -98,3 +98,25 @@ func readData() (*Data, error) {
 
 	return &data, nil
 }
+
+func (d *Data) WriteData() (success bool) {
+	var lines []string
+	for _, milestone := range d.Milestones {
+		lines = append(lines, fmt.Sprintf("> %s", milestone.Name))
+		for _, task := range milestone.Tasks {
+			line := task.Text
+			if task.Done {
+				line = "OK " + line
+			}
+			lines = append(lines, line)
+		}
+	}
+	text := strings.Join(append(lines, ""), "\n")
+
+	err := ioutil.WriteFile("todolist.txt", []byte(text), 0600)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "WriteData: ", err)
+		return false
+	}
+	return true
+}
