@@ -22,7 +22,6 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -67,7 +66,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 				)
 				html += fmt.Sprintf(`<a href="%s" class="%s">%s</a>`,
 					path, class,
-					template.HTMLEscapeString(task.Text),
+					HTMLEscapeString(task.Text),
 				)
 			}
 			html += `</div>`
