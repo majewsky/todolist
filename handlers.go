@@ -23,6 +23,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -43,6 +44,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	data := ReadData()
 	if data == nil {
 		serveError(w, 500, "Cannot read data. Check the server log for details.")
+		return
 	}
 
 	html := `<section>`
@@ -87,6 +89,7 @@ func toggleHandler(w http.ResponseWriter, r *http.Request) {
 	data := ReadData()
 	if data == nil {
 		serveError(w, 500, "Cannot read data. Check the server log for details.")
+		return
 	}
 
 	//retrieve parameters
@@ -96,15 +99,18 @@ func toggleHandler(w http.ResponseWriter, r *http.Request) {
 
 	if mIdx < 0 || mIdx >= len(data.Milestones) {
 		serveError(w, 400, "Milestone index out of range.")
+		return
 	}
 	milestone := data.Milestones[mIdx]
 	if tIdx < 0 || tIdx >= len(milestone.Tasks) {
 		serveError(w, 400, "Task index out of range.")
+		return
 	}
 	task := milestone.Tasks[tIdx]
 	task.Done = !task.Done
 	if !data.WriteData() {
 		serveError(w, 500, "Cannot write data. Check the server log for details.")
+		return
 	}
 
 	w.Header().Add("Location", "/")
@@ -112,17 +118,47 @@ func toggleHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
-	serveError(w, 500, "Not implemented")
+	data := ReadData()
+	if data == nil {
+		serveError(w, 500, "Cannot read data. Check the server log for details.")
+		return
+	}
+
+	html := `<section><form action="/edit" method="POST"><textarea name="text">`
+	html += HTMLEscapeString(data.String())
+	html += `</textarea><p><button type="submit">Save</button></p></form></section>`
+
+	serveHTML(w, "Edit Tasks", html)
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request) {
-	serveError(w, 500, "Not implemented")
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "ParseForm: ", err)
+		serveError(w, 400, "Malformed HTTP request.")
+		return
+	}
+
+	data, err := ParseData(r.PostFormValue("text"))
+	if err != nil {
+		serveError(w, 400, "Malformed input: "+err.Error())
+		return
+	}
+
+	if !data.WriteData() {
+		serveError(w, 500, "Cannot write data. Check the server log for details.")
+		return
+	}
+
+	w.Header().Add("Location", "/")
+	w.WriteHeader(302)
 }
 
 func pruneHandler(w http.ResponseWriter, r *http.Request) {
 	data := ReadData()
 	if data == nil {
 		serveError(w, 500, "Cannot read data. Check the server log for details.")
+		return
 	}
 
 	//filter tasks that are done
@@ -150,6 +186,7 @@ func pruneHandler(w http.ResponseWriter, r *http.Request) {
 	if hasDone {
 		if !data.WriteData() {
 			serveError(w, 500, "Cannot write data. Check the server log for details.")
+			return
 		}
 	}
 
@@ -161,6 +198,7 @@ func backupHandler(w http.ResponseWriter, r *http.Request) {
 	data := ReadData()
 	if data == nil {
 		serveError(w, 500, "Cannot read data. Check the server log for details.")
+		return
 	}
 
 	w.Header().Add("Content-Type", "text/plain;charset=utf-8")

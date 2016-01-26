@@ -79,3 +79,13 @@ a {
 .table > .row > a + a {
 	border-left: 1px solid black;
 }
+
+textarea {
+	width: 100%;
+	height: 50vh;
+	min-height: 10rem;
+}
+
+form > p {
+	text-align: center;
+}

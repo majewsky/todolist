@@ -63,12 +63,15 @@ func readData() (*Data, error) {
 		}
 		return nil, err
 	}
+	return ParseData(string(contents))
+}
 
+func ParseData(text string) (*Data, error) {
 	headerRx := regexp.MustCompile(`^>\s*(\S.*)$`)
 	var data Data
 	var milestone *Milestone
 
-	lines := strings.Split(string(contents), "\n")
+	lines := strings.Split(text, "\n")
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		// skip empty lines
