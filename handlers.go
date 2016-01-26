@@ -119,7 +119,41 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func pruneHandler(w http.ResponseWriter, r *http.Request) {
-	serveError(w, 500, "Not implemented")
+	data := ReadData()
+	if data == nil {
+		serveError(w, 500, "Cannot read data. Check the server log for details.")
+	}
+
+	//filter tasks that are done
+	var openMilestones []*Milestone
+	hasDone := false
+
+	for _, milestone := range data.Milestones {
+		var openTasks []*Task
+		for _, task := range milestone.Tasks {
+			if task.Done {
+				hasDone = true
+			} else {
+				openTasks = append(openTasks, task)
+			}
+		}
+
+		milestone.Tasks = openTasks
+		if len(openTasks) > 0 {
+			openMilestones = append(openMilestones, milestone)
+		}
+	}
+	data.Milestones = openMilestones
+
+	//write data only if changed
+	if hasDone {
+		if !data.WriteData() {
+			serveError(w, 500, "Cannot write data. Check the server log for details.")
+		}
+	}
+
+	w.Header().Add("Location", "/")
+	w.WriteHeader(302)
 }
 
 func backupHandler(w http.ResponseWriter, r *http.Request) {
