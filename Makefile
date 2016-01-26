@@ -1,2 +1,2 @@
-todolist: todolist.go
-	@go build -o $@ $<
+todolist: *.go
+	@go build -o $@

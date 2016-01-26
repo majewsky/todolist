@@ -21,55 +21,13 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
-	"html/template"
 	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
 )
-
-var globalTemplate = template.Must(template.New("global.html").Parse(`<!doctype html>
-<html lang="de">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>todolist - {{.Title}}</title>
-		<link rel="stylesheet" type="text/css" href="/static/style.css">
-	</head>
-	<body>
-		<header>
-			<h1>{{.Title}}</h1>
-		</header>
-		{{.Content}}
-	</body>
-</html>`))
-
-func serveHTML(w http.ResponseWriter, title, content string) {
-	//render content into globalTemplate
-	type vars struct {
-		Title   string
-		Content template.HTML
-	}
-	var buf bytes.Buffer
-	globalTemplate.Execute(&buf, &vars{title, template.HTML(content)})
-
-	w.Header().Add("Content-Type", "text-html; charset=utf-8")
-	n, err := w.Write(buf.Bytes())
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "ResponseWriter.Write failed: ", err)
-	}
-	if n < buf.Len() {
-		fmt.Fprintf(os.Stderr, "ResponseWriter.Write aborted after %d of %d bytes", n, buf.Len())
-	}
-}
-
-type varsForGlobalTemplate struct {
-	Title   string
-	Content string
-}
 
 var router = mux.NewRouter()
 
@@ -86,7 +44,7 @@ func main() {
 	})
 
 	//setup the remaining routes with gorilla/mux
-	router.HandleFunc("/", indexHandler).Methods("GET").Name("index")
+	collectRoutes(router)
 	http.Handle("/", router)
 
 	//run server
@@ -95,8 +53,4 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ListenAndServe: ", err)
 	}
-}
-
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	serveHTML(w, "Test", `<p>Foo Bar</p>`)
 }
