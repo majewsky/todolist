@@ -22,6 +22,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -55,13 +56,17 @@ func serveCommon(w http.ResponseWriter, title, content string, status int) {
 	//place content into globalTemplate
 	text := strings.Replace(globalTemplate, "<template:title>", HTMLEscapeString(title), -1)
 	text = strings.Replace(text, "<template:content>", content, -1)
-	bytes := []byte(text)
 
 	//write response header
 	w.Header().Add("Content-Type", "text-html; charset=utf-8")
 	w.WriteHeader(status)
 
-	//write response header
+	//write contents
+	writeWithLogging(w, text)
+}
+
+func writeWithLogging(w io.Writer, text string) {
+	bytes := []byte(text)
 	n, err := w.Write(bytes)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ResponseWriter.Write failed: ", err)

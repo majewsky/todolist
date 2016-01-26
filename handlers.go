@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -34,7 +35,7 @@ func collectRoutes(router *mux.Router) {
 	router.HandleFunc("/edit", editHandler).Methods("GET").Name("edit")
 	router.HandleFunc("/edit", saveHandler).Methods("POST").Name("save")
 	router.HandleFunc("/prune", pruneHandler).Name("prune")
-	router.HandleFunc("/backup", pruneHandler).Name("backup")
+	router.HandleFunc("/backup", backupHandler).Name("backup")
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -157,5 +158,14 @@ func pruneHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func backupHandler(w http.ResponseWriter, r *http.Request) {
-	serveError(w, 500, "Not implemented")
+	data := ReadData()
+	if data == nil {
+		serveError(w, 500, "Cannot read data. Check the server log for details.")
+	}
+
+	w.Header().Add("Content-Type", "text/plain;charset=utf-8")
+	dateStr := time.Now().Format("2006-01-02")
+	w.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=todolist-%s.txt", dateStr))
+
+	writeWithLogging(w, data.String())
 }
