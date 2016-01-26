@@ -34,7 +34,7 @@ var globalTemplate = `<!doctype html>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>todolist - <template:title></title>
-		<link rel="stylesheet" type="text/css" href="/static/style.css">
+		<style type="text/css"><template:css></style>
 	</head>
 	<body>
 		<header>
@@ -56,6 +56,7 @@ func serveCommon(w http.ResponseWriter, title, content string, status int) {
 	//place content into globalTemplate
 	text := strings.Replace(globalTemplate, "<template:title>", HTMLEscapeString(title), -1)
 	text = strings.Replace(text, "<template:content>", content, -1)
+	text = strings.Replace(text, "<template:css>", assetCSS, -1)
 
 	//write response header
 	w.Header().Add("Content-Type", "text-html; charset=utf-8")

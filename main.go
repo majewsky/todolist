@@ -36,13 +36,6 @@ func main() {
 	port := flag.Int("port", 8080, "serving port")
 	flag.Parse()
 
-	//setup static file serving (this is only used in development contexts; in
-	//production, these should be served by a dedicated HTTP server that also
-	//terminates TLS for this application)
-	http.HandleFunc("/static/style.css", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "static/style.css")
-	})
-
 	//setup the remaining routes with gorilla/mux
 	collectRoutes(Router)
 	http.Handle("/", Router)
