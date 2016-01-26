@@ -31,5 +31,30 @@ func collectRoutes(router *mux.Router) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	serveHTML(w, "Test", `<p>Foo Bar</p>`)
+	//TODO: login
+	data := ReadData()
+	if data == nil {
+		serveError(w, "Cannot read data. Check the server log for details.")
+	}
+
+	var html string
+	if len(data.Milestones) == 0 {
+		html = "<p>No tasks defined yet.</p>"
+	}
+
+	for _, milestone := range data.Milestones {
+		html += "<h2>" + milestone.Name + "</h2>"
+		if len(milestone.Tasks) == 0 {
+			html += "<p>No tasks in this group.</p>"
+		} else {
+			html += "<ul>"
+
+			for _, task := range milestone.Tasks {
+				html += "<li>" + task.Text + "</li>"
+			}
+			html += "</ul>"
+		}
+
+	}
+	serveHTML(w, "Tasks", html)
 }

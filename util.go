@@ -44,16 +44,31 @@ var globalTemplate = template.Must(template.New("global.html").Parse(`<!doctype 
 	</body>
 </html>`))
 
-func serveHTML(w http.ResponseWriter, title, content string) {
-	//render content into globalTemplate
-	type vars struct {
-		Title   string
-		Content template.HTML
-	}
-	var buf bytes.Buffer
-	globalTemplate.Execute(&buf, &vars{title, template.HTML(content)})
+type varsForGlobalTemplate struct {
+	Title   string
+	Content template.HTML
+}
 
+func serveHTML(w http.ResponseWriter, title, content string) {
+	serveCommon(w, title, content, http.StatusOK)
+}
+
+func serveError(w http.ResponseWriter, errorMsg string) {
+	serveCommon(w, "Error", errorMsg, http.StatusInternalServerError)
+}
+
+func serveCommon(w http.ResponseWriter, title, content string, status int) {
+	//render content into globalTemplate
+	var buf bytes.Buffer
+	globalTemplate.Execute(&buf, &varsForGlobalTemplate{
+		title, template.HTML(content),
+	})
+
+	//write response header
 	w.Header().Add("Content-Type", "text-html; charset=utf-8")
+	w.WriteHeader(status)
+
+	//write response header
 	n, err := w.Write(buf.Bytes())
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ResponseWriter.Write failed: ", err)
