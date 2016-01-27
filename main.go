@@ -30,7 +30,7 @@ import (
 	"regexp"
 	"strings"
 
-	"golang.org/x/crypto/bcrypt"
+	"github.com/majewsky/todolist/Godeps/_workspace/src/golang.org/x/crypto/bcrypt"
 )
 
 func main() {

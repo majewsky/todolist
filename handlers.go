@@ -27,7 +27,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/majewsky/todolist/Godeps/_workspace/src/github.com/gorilla/mux"
 )
 
 var Router = mux.NewRouter()
