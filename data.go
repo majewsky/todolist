@@ -43,10 +43,14 @@ type Task struct {
 	Text string
 }
 
+func dataFileName(userName string) string {
+	return "todolist-" + userName + ".txt"
+}
+
 //ReadData reads Data from the todolist.txt file. If the file is broken, an
 //error is logged and nil is returned.
-func ReadData() *Data {
-	data, err := readData()
+func ReadData(userName string) *Data {
+	data, err := readData(userName)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "ReadData: ", err)
 		return nil
@@ -54,8 +58,8 @@ func ReadData() *Data {
 	return data
 }
 
-func readData() (*Data, error) {
-	contents, err := ioutil.ReadFile("todolist.txt")
+func readData(userName string) (*Data, error) {
+	contents, err := ioutil.ReadFile(dataFileName(userName))
 	if err != nil {
 		//missing data file is a valid initial state
 		if os.IsNotExist(err) {
@@ -119,8 +123,8 @@ func (d *Data) String() string {
 	return strings.Join(lines, "\n")
 }
 
-func (d *Data) WriteData() (success bool) {
-	err := ioutil.WriteFile("todolist.txt", []byte(d.String()), 0600)
+func (d *Data) WriteData(userName string) (success bool) {
+	err := ioutil.WriteFile(dataFileName(userName), []byte(d.String()), 0600)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "WriteData: ", err)
 		return false

@@ -30,18 +30,19 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func collectRoutes(router *mux.Router) {
-	router.HandleFunc("/", indexHandler).Name("index")
-	router.HandleFunc("/toggle/{milestone:[0-9]+}/{task:[0-9]+}", toggleHandler).Name("toggle")
-	router.HandleFunc("/edit", editHandler).Methods("GET").Name("edit")
-	router.HandleFunc("/edit", saveHandler).Methods("POST").Name("save")
-	router.HandleFunc("/prune", pruneHandler).Name("prune")
-	router.HandleFunc("/backup", backupHandler).Name("backup")
+var Router = mux.NewRouter()
+
+func init() {
+	Router.HandleFunc("/", indexHandler).Name("index")
+	Router.HandleFunc("/toggle/{milestone:[0-9]+}/{task:[0-9]+}", toggleHandler).Name("toggle")
+	Router.HandleFunc("/edit", editHandler).Methods("GET").Name("edit")
+	Router.HandleFunc("/edit", saveHandler).Methods("POST").Name("save")
+	Router.HandleFunc("/prune", pruneHandler).Name("prune")
+	Router.HandleFunc("/backup", backupHandler).Name("backup")
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO: login
-	data := ReadData()
+	data := ReadData(r.Header.Get("X-Todo-UserName"))
 	if data == nil {
 		serveError(w, 500, "Cannot read data. Check the server log for details.")
 		return
@@ -86,7 +87,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func toggleHandler(w http.ResponseWriter, r *http.Request) {
-	data := ReadData()
+	data := ReadData(r.Header.Get("X-Todo-UserName"))
 	if data == nil {
 		serveError(w, 500, "Cannot read data. Check the server log for details.")
 		return
@@ -108,7 +109,7 @@ func toggleHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	task := milestone.Tasks[tIdx]
 	task.Done = !task.Done
-	if !data.WriteData() {
+	if !data.WriteData(r.Header.Get("X-Todo-UserName")) {
 		serveError(w, 500, "Cannot write data. Check the server log for details.")
 		return
 	}
@@ -118,7 +119,7 @@ func toggleHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
-	data := ReadData()
+	data := ReadData(r.Header.Get("X-Todo-UserName"))
 	if data == nil {
 		serveError(w, 500, "Cannot read data. Check the server log for details.")
 		return
@@ -145,7 +146,7 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !data.WriteData() {
+	if !data.WriteData(r.Header.Get("X-Todo-UserName")) {
 		serveError(w, 500, "Cannot write data. Check the server log for details.")
 		return
 	}
@@ -155,7 +156,7 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func pruneHandler(w http.ResponseWriter, r *http.Request) {
-	data := ReadData()
+	data := ReadData(r.Header.Get("X-Todo-UserName"))
 	if data == nil {
 		serveError(w, 500, "Cannot read data. Check the server log for details.")
 		return
@@ -184,7 +185,7 @@ func pruneHandler(w http.ResponseWriter, r *http.Request) {
 
 	//write data only if changed
 	if hasDone {
-		if !data.WriteData() {
+		if !data.WriteData(r.Header.Get("X-Todo-UserName")) {
 			serveError(w, 500, "Cannot write data. Check the server log for details.")
 			return
 		}
@@ -195,7 +196,7 @@ func pruneHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func backupHandler(w http.ResponseWriter, r *http.Request) {
-	data := ReadData()
+	data := ReadData(r.Header.Get("X-Todo-UserName"))
 	if data == nil {
 		serveError(w, 500, "Cannot read data. Check the server log for details.")
 		return
