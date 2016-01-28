@@ -52,9 +52,13 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	hasDone := false
 
 	for mIdx, milestone := range data.Milestones {
-		html += `<h2>` + milestone.Name + `</h2>`
+		if milestone.Name != "" {
+			html += `<h2>` + milestone.Name + `</h2>`
+		}
 		if len(milestone.Tasks) == 0 {
-			html += `<p>No tasks in this group.</p>`
+			if milestone.Name != "" {
+				html += `<p>No tasks in this group.</p>`
+			}
 		} else {
 			html += `<div class="group">`
 
@@ -125,7 +129,7 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	html := `<section><form action="/edit" method="POST"><textarea name="text">`
+	html := `<section><p>Write one task per line. If the line starts with the word &quot;OK&quot;, the task is done. To group tasks in a milestone, prefix them with a line starting with &quot;&gt;&quot;.</p><form action="/edit" method="POST"><textarea name="text">`
 	html += HTMLEscapeString(data.String())
 	html += `</textarea><p><button type="submit">Save</button></p></form></section>`
 
@@ -140,12 +144,7 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := ParseData(r.PostFormValue("text"))
-	if err != nil {
-		serveError(w, 400, "Malformed input: "+err.Error())
-		return
-	}
-
+	data := ParseData(r.PostFormValue("text"))
 	if !data.WriteData(r.Header.Get("X-Todo-UserName")) {
 		serveError(w, 500, "Cannot write data. Check the server log for details.")
 		return

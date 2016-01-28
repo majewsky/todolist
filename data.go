@@ -21,7 +21,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -50,28 +49,21 @@ func dataFileName(userName string) string {
 //ReadData reads Data from the todolist.txt file. If the file is broken, an
 //error is logged and nil is returned.
 func ReadData(userName string) *Data {
-	data, err := readData(userName)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "ReadData: ", err)
-		return nil
-	}
-	return data
-}
-
-func readData(userName string) (*Data, error) {
 	contents, err := ioutil.ReadFile(dataFileName(userName))
 	if err != nil {
 		//missing data file is a valid initial state
 		if os.IsNotExist(err) {
-			return &Data{}, nil
+			return &Data{}
 		}
-		return nil, err
+		fmt.Fprintln(os.Stderr, "ReadData: ", err)
+		return nil
 	}
 	return ParseData(string(contents))
 }
 
-func ParseData(text string) (*Data, error) {
+func ParseData(text string) *Data {
 	headerRx := regexp.MustCompile(`^>\s*(\S.*)$`)
+	doneRx := regexp.MustCompile(`^\s*OK\s*(\S.*)$`)
 	var data Data
 	var milestone *Milestone
 
@@ -90,26 +82,31 @@ func ParseData(text string) (*Data, error) {
 		} else {
 			//otherwise, it's a task
 			if milestone == nil {
-				return nil, errors.New("found a task that is not within a milestone")
+				//empty milestone
+				milestone = &Milestone{Name: ""}
+				data.Milestones = append(data.Milestones, milestone)
 			}
+			doneMatch := doneRx.FindStringSubmatch(line)
 			task := &Task{
-				Done: strings.HasPrefix(line, "OK "),
+				Done: len(doneMatch) > 0,
 				Text: line,
 			}
 			if task.Done {
-				task.Text = strings.TrimPrefix(task.Text, "OK ")
+				task.Text = doneMatch[1]
 			}
 			milestone.Tasks = append(milestone.Tasks, task)
 		}
 	}
 
-	return &data, nil
+	return &data
 }
 
 func (d *Data) String() string {
 	var lines []string
 	for _, milestone := range d.Milestones {
-		lines = append(lines, fmt.Sprintf("> %s", milestone.Name))
+		if milestone.Name != "" {
+			lines = append(lines, fmt.Sprintf("> %s", milestone.Name))
+		}
 		for _, task := range milestone.Tasks {
 			line := task.Text
 			if task.Done {
