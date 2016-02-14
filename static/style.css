@@ -38,12 +38,11 @@ section.wide {
 }
 
 a {
-	height: 2rem;
+	min-height: 2rem;
 	line-height: 2rem;
 	text-align: center;
 	text-decoration: none !important;
 	color: black !important;
-	font-weight: bold;
 }
 
 .group > a + a {
@@ -77,6 +76,7 @@ a {
 .table > .row > a {
 	display: table-cell;
 	width: 25%;
+	font-weight: bold;
 }
 
 .table > .row > a + a {
